@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linkado – Angebote</title>
+<style>
+  :root {
+    --orange: #E8420C;
+    --orange-dark: #C42B00;
+    --blue: #1A56DB;
+    --blue-hover: #1648B8;
+    --dark: #1a1a2e;
+    --text: #2d2d3a;
+    --text-secondary: #6e6e80;
+    --text-light: #8e8e9a;
+    --border: #e5e5ea;
+    --bg: #f5f5f7;
+    --bg-card: #ffffff;
+    --green: #34c759;
+    --green-bg: #f0faf3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.5;
+    padding-bottom: 80px; /* Platz für fixed Footer-Nav */
+  }
+
+  .header {
+    background: var(--orange);
+    padding: 12px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left { color: white; font-size: 14px; font-weight: 500; }
+  .header-right { display: flex; gap: 16px; align-items: center; }
+  .header-right a { color: white; text-decoration: none; font-size: 14px; font-weight: 500; }
+  .header-right a:hover { opacity: 0.85; }
+  #btn-user { color: white; font-size: 14px; font-weight: 600; }
+
+  .page { display: none; }
+  .page.active { display: block; animation: pageIn 0.35s ease; }
+  @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .steps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 36px 0 12px;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-light);
+  }
+
+  .step.active { color: var(--dark); }
+  .step.done { color: var(--green); }
+
+  .step-number {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .step.active .step-number { border-color: var(--dark); background: var(--dark); color: white; }
+  .step.done .step-number { border-color: var(--green); background: var(--green); color: white; }
+
+  .step-line { width: 48px; height: 1px; background: var(--border); margin: 0 12px; }
+  .step-line.done { background: var(--green); }
+
+  .section-header { text-align: center; padding: 16px 24px 32px; }
+
+  .section-label {
+    display: inline-block;
+    background: #eaeaee;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 16px;
+    margin-bottom: 14px;
+  }
+
+  .section-header h1 {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--dark);
+    margin-bottom: 8px;
+  }
+
+  .section-header p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    max-width: 460px;
+    margin: 0 auto;
+  }
+
+  .toggle-wrap { display: flex; justify-content: center; margin-bottom: 36px; }
+
+  .toggle {
+    display: flex;
+    background: white;
+    border-radius: 10px;
+    padding: 3px;
+    border: 1px solid var(--border);
+  }
+
+  .toggle-opt {
+    padding: 9px 22px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .toggle-opt.active { background: var(--dark); color: white; }
+
+  .toggle-badge {
+    display: inline-block;
+    background: var(--green-bg);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 6px;
+    margin-left: 5px;
+  }
+
+  .cards-container { max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; }
+
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 860px) { .cards { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; } }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: 14px;
+    padding: 28px 24px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.3s, transform 0.3s;
+    position: relative;
+  }
+
+  .card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); transform: translateY(-2px); }
+  .card.highlight { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue); }
+
+  .card-recommended {
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--blue);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 3px 14px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+
+  .card-name { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; color: var(--dark); margin-bottom: 2px; }
+
+  .card-price-row { margin: 12px 0 4px; }
+
+  .card-price-old {
+    font-size: 16px;
+    color: var(--text-light);
+    text-decoration: line-through;
+    margin-right: 6px;
+    display: none;
+  }
+
+  .card-price-old.show { display: inline; }
+
+  .card-price-amount { font-size: 32px; font-weight: 700; color: var(--orange); letter-spacing: -0.02em; }
+  .card-price-period { font-size: 15px; font-weight: 500; color: var(--text); }
+  .card-save { font-size: 12px; font-weight: 600; color: var(--green); margin-top: 2px; height: 18px; }
+
+  .card-desc { font-size: 14px; color: var(--text-secondary); margin: 16px 0 18px; line-height: 1.5; }
+
+  .card-features { list-style: disc; padding-left: 18px; margin-bottom: 20px; flex: 1; }
+  .card-features li { font-size: 14px; color: var(--text); padding: 3px 0; line-height: 1.5; }
+
+  .card-support { font-size: 14px; color: var(--text-secondary); margin-bottom: 22px; }
+
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 13px 24px;
+    border-radius: 8px;
+    border: none;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .btn-blue { background: var(--blue); color: white; }
+  .btn-blue:hover { background: var(--blue-hover); }
+  .btn-orange { background: var(--orange); color: white; }
+  .btn-orange:hover { background: var(--orange-dark); }
+
+  .trust {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    padding: 28px 0;
+    border-top: 1px solid var(--border);
+    max-width: 1100px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+  }
+
+  .trust span { font-size: 13px; color: var(--text-light); font-weight: 500; }
+
+  .checkout-container { max-width: 1060px; margin: 0 auto; padding: 0 24px 40px; }
+
+  .back {
+    display: inline-block;
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    cursor: pointer;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .back:hover { color: var(--dark); }
+
+  .checkout-grid { display: grid; grid-template-columns: 1fr 360px; gap: 32px; align-items: start; }
+  @media (max-width: 820px) { .checkout-grid { grid-template-columns: 1fr; } }
+
+  .form-card { background: white; border-radius: 14px; border: 1px solid var(--border); padding: 28px; }
+  .form-title { font-size: 15px; font-weight: 700; color: var(--dark); margin-bottom: 16px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 3px; }
+  .form-group label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+
+  .form-group input,
+  .form-group select {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--dark);
+    background: white;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(26,86,219,0.08);
+  }
+
+  .form-group input::placeholder { color: #c7c7cc; }
+  .form-group input[readonly] { background: #f9f9fb; color: var(--text-secondary); cursor: default; }
+
+  .divider { height: 1px; background: var(--border); margin: 22px 0; }
+
+  .pay-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+
+  .pay-opt {
+    padding: 12px 6px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+  }
+
+  .pay-opt:hover { border-color: var(--text-light); }
+  .pay-opt.active { border-color: var(--blue); color: var(--blue); background: rgba(26,86,219,0.02); }
+
+  .terms { display: flex; gap: 10px; align-items: flex-start; margin-top: 18px; }
+  .terms input { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--blue); flex-shrink: 0; }
+  .terms label { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+  .terms a { color: var(--blue); }
+
+  .summary {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    padding: 24px;
+    position: sticky;
+    top: 64px;
+  }
+
+  .summary-header { padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .summary-plan-name { font-size: 17px; font-weight: 700; color: var(--dark); }
+  .summary-plan-interval { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+  .summary-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-secondary); padding: 5px 0; }
+
+  .summary-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--dark);
+    padding-top: 14px;
+    margin-top: 10px;
+    border-top: 1.5px solid var(--border);
+  }
+
+  .summary-total-amount { color: var(--orange); font-size: 20px; }
+
+  .summary-cta { margin-top: 20px; }
+  .summary-cta .btn { padding: 14px; font-size: 15px; }
+
+  .summary-notes { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 7px; }
+
+  .summary-note {
+    font-size: 12px;
+    color: var(--text-light);
+    padding-left: 18px;
+    position: relative;
+  }
+
+  .summary-note::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--green);
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .confirm-container { max-width: 520px; margin: 0 auto; padding: 48px 24px; text-align: center; }
+
+  .confirm-check {
+    width: 64px; height: 64px;
+    background: var(--green-bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 28px;
+    color: var(--green);
+    font-weight: 700;
+    animation: popIn 0.4s ease;
+  }
+
+  @keyframes popIn { from { transform: scale(0); } 60% { transform: scale(1.12); } to { transform: scale(1); } }
+
+  .confirm-container h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }
+  .confirm-container > p { font-size: 15px; color: var(--text-secondary); margin-bottom: 32px; }
+  .confirm-container strong { color: var(--dark); }
+
+  .next-steps {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    padding: 24px;
+    text-align: left;
+    margin-bottom: 24px;
+  }
+
+  .next-steps h3 {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 18px;
+  }
+
+  .ns-item { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px; }
+  .ns-item:last-child { margin-bottom: 0; }
+
+  .ns-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--dark);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .ns-text { font-size: 14px; color: var(--text-secondary); line-height: 1.5; padding-top: 1px; }
+  .ns-text strong { color: var(--dark); font-weight: 600; }
+
+  .demo-reset {
+    display: inline-block;
+    font-size: 14px;
+    color: var(--text-light);
+    text-decoration: none;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  .demo-reset:hover { color: var(--dark); }
+
+  .proto {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--dark);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+
+  .proto-dot {
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: blink 2s infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── Auth Page (Page 0) ───────────────────────────────────────────────────── */
+
+  .auth-container {
+    min-height: calc(100vh - 52px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px 60px;
+  }
+
+  .auth-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--green-bg);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 16px;
+    margin-bottom: 28px;
+    border: 1px solid rgba(52, 199, 89, 0.2);
+  }
+
+  .auth-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .auth-logo-icon {
+    width: 40px; height: 40px;
+    background: var(--orange);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .auth-logo-text {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--dark);
+  }
+
+  .auth-tagline {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 28px;
+    text-align: center;
+  }
+
+  .auth-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    padding: 28px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+
+  .auth-tabs {
+    display: flex;
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 3px;
+    margin-bottom: 22px;
+    gap: 2px;
+  }
+
+  .auth-tab {
+    flex: 1;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .auth-tab.active {
+    background: white;
+    color: var(--dark);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .auth-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 12px;
+  }
+
+  .auth-form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .auth-form-group input {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--dark);
+    background: white;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+
+  .auth-form-group input:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(232,66,12,0.08);
+  }
+
+  .auth-form-group input::placeholder { color: #c7c7cc; }
+
+  .auth-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+  .auth-btn-wrap { margin-top: 20px; }
+
+  .auth-terms {
+    font-size: 11px;
+    color: var(--text-light);
+    text-align: center;
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+
+  .auth-terms a { color: var(--blue); text-decoration: none; }
+  .auth-terms a:hover { text-decoration: underline; }
+
+  .auth-forgot {
+    display: block;
+    font-size: 12px;
+    color: var(--text-light);
+    text-decoration: none;
+    text-align: right;
+    margin-top: -4px;
+    margin-bottom: 4px;
+  }
+
+  .auth-forgot:hover { color: var(--dark); text-decoration: underline; }
+
+  .auth-notice {
+    background: #fff8f5;
+    border: 1px solid #fdd9cc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--orange-dark);
+    margin-top: 10px;
+    line-height: 1.5;
+    animation: pageIn 0.25s ease;
+  }
+
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0;
+    color: var(--text-light);
+    font-size: 12px;
+  }
+
+  .auth-divider::before,
+  .auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  @media (max-width: 480px) {
+    .auth-container { padding: 24px 16px 48px; }
+    .auth-row { grid-template-columns: 1fr; }
+    .auth-card { padding: 20px; }
+  }
+
+  /* ── Form Sections (statt form-card) ──────────────────────────────────── */
+
+  .form-section { padding: 28px 0; }
+  .form-section:first-child { padding-top: 0; }
+
+  .form-section-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--dark);
+    margin-bottom: 4px;
+  }
+
+  .form-section-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+
+  /* ── Warenkorb (rechte Spalte) ─────────────────────────────────────────── */
+
+  .warenkorb {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: sticky;
+    top: 72px;
+  }
+
+  .warenkorb-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .warenkorb-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--orange);
+    cursor: pointer;
+  }
+
+  .warenkorb-product {
+    background: var(--orange);
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 11px 14px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    letter-spacing: 0.01em;
+  }
+
+  .warenkorb-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-light);
+    margin-bottom: 6px;
+    margin-top: 12px;
+  }
+
+  .warenkorb-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 4px 0;
+  }
+
+  .warenkorb-item-name { flex: 1; }
+
+  .warenkorb-separator {
+    height: 1px;
+    background: var(--border);
+    margin: 12px 0;
+  }
+
+  .warenkorb-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dark);
+    padding: 3px 0;
+  }
+
+  .warenkorb-total-amount { color: var(--orange); }
+
+  .warenkorb-gesamtblock {
+    background: #fff8f5;
+    border: 1px solid #fdd9cc;
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 16px;
+  }
+
+  .warenkorb-gesamtblock .warenkorb-total {
+    font-size: 16px;
+  }
+
+  .warenkorb-gesamtblock .warenkorb-total-amount {
+    font-size: 18px;
+  }
+
+  /* ── Footer Navigation (fixed) ──────────────────────────────────────────── */
+
+  .page-nav {
+    display: none; /* wird per JS ein-/ausgeblendet */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1.5px solid var(--border);
+    padding: 14px 28px;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 90;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  }
+
+  .page-nav.visible { display: flex; }
+
+  .btn-back {
+    border: 2px solid var(--orange);
+    color: var(--orange);
+    background: transparent;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 10px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-back:hover { background: #fff2ee; }
+
+  .btn-next {
+    background: var(--orange);
+    color: white;
+    border: none;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 10px 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-next:hover { background: var(--orange-dark); }
+  .btn-next:disabled { background: #d1d1d6; cursor: not-allowed; }
+
+  /* ── USt-ID Conditional Field ──────────────────────────────────────────── */
+  #ust-id-wrap { display: none; }
+
+  /* ── Review Page ───────────────────────────────────────────────────────── */
+  .review-container { max-width: 680px; margin: 0 auto; padding: 0 24px 60px; }
+
+  .review-box {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .review-box-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+  }
+
+  .review-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-size: 14px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--bg);
+  }
+
+  .review-row:last-child { border-bottom: none; }
+  .review-row-label { color: var(--text-secondary); flex-shrink: 0; }
+  .review-row-value { font-weight: 600; color: var(--dark); text-align: right; }
+
+  .review-total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--dark);
+    padding-top: 14px;
+    margin-top: 10px;
+    border-top: 1.5px solid var(--border);
+  }
+
+  .review-total-amount { color: var(--orange); }
+
+  /* 3 Checkboxen */
+  .terms-group { display: flex; flex-direction: column; gap: 16px; }
+
+  .terms-item { display: flex; gap: 10px; align-items: flex-start; }
+  .terms-item input[type="checkbox"] {
+    width: 17px; height: 17px;
+    margin-top: 1px;
+    accent-color: var(--blue);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .terms-item label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    cursor: pointer;
+  }
+
+  .terms-item label a { color: var(--blue); }
+  .terms-item label strong { color: var(--dark); font-weight: 600; }
+
+  /* Finalize Button */
+  .btn-finalize {
+    display: block;
+    width: 100%;
+    padding: 15px 24px;
+    border-radius: 8px;
+    border: none;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--orange);
+    color: white;
+    transition: background 0.2s;
+    margin-top: 24px;
+  }
+
+  .btn-finalize:hover:not(:disabled) { background: var(--orange-dark); }
+
+  .btn-finalize:disabled {
+    background: #d1d1d6;
+    color: white;
+    cursor: not-allowed;
+  }
+
+  /* ── Bestätigung: Ordernummer + Status-Badge ─────────────────────────── */
+  .order-number-badge {
+    display: inline-block;
+    background: #f0f7ff;
+    border: 1px solid #c5deff;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--blue);
+    letter-spacing: 0.05em;
+    margin: 8px auto 6px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    background: #f0f4ff;
+    color: #5165ae;
+    border: 1px solid #ced6f0;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 11px;
+    margin-bottom: 28px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left" id="breadcrumb">Schreibtisch / Angebote</div>
+  <div class="header-right" id="header-right">
+    <a href="#" id="btn-anmelden" onclick="go(0); return false;">→ Anmelden</a>
+    <span id="btn-user" style="display:none;"></span>
+    <a href="#" id="btn-abmelden" onclick="logout(); return false;" style="display:none;">→ Abmelden</a>
+  </div>
+</div>
+
+<div class="proto"><span class="proto-dot"></span>Klickbarer Prototyp</div>
+
+<!-- PAGE 0 – Anmelden / Registrieren -->
+<div id="p0" class="page">
+  <div class="auth-container">
+
+    <a class="back" onclick="go(1)" style="margin-bottom:16px;">← Zurück zu den Paketen</a>
+
+    <div class="auth-hint">✦ Prototyp – kein echtes Passwort nötig, einfach weiter klicken</div>
+
+    <div class="auth-logo">
+      <div class="auth-logo-icon">L</div>
+      <div class="auth-logo-text">Linkado</div>
+    </div>
+    <p class="auth-tagline" id="auth-tagline">Dein digitaler Arbeitsplatz für moderne Teams.</p>
+
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-register" onclick="showAuthTab('register')">Registrieren</button>
+        <button class="auth-tab" id="tab-login" onclick="showAuthTab('login')">Anmelden</button>
+      </div>
+
+      <!-- Registrieren -->
+      <div id="auth-register">
+        <div class="auth-row">
+          <div class="auth-form-group">
+            <label>Vorname</label>
+            <input type="text" id="r-firstname" placeholder="Max" autocomplete="given-name">
+          </div>
+          <div class="auth-form-group">
+            <label>Nachname</label>
+            <input type="text" id="r-lastname" placeholder="Mustermann" autocomplete="family-name">
+          </div>
+        </div>
+        <div class="auth-form-group">
+          <label>E-Mail-Adresse</label>
+          <input type="email" id="r-email" placeholder="max@unternehmen.de" autocomplete="email">
+        </div>
+        <div class="auth-form-group">
+          <label>Passwort wählen</label>
+          <input type="password" id="r-password" placeholder="Mindestens 8 Zeichen">
+        </div>
+        <div class="auth-btn-wrap">
+          <button class="btn btn-orange" onclick="auth('register')">Konto erstellen &amp; weiter →</button>
+        </div>
+        <p class="auth-terms">Mit der Registrierung stimmst du unseren <a href="#">AGB</a> und der <a href="#">Datenschutzerklärung</a> zu. DSGVO-konform, Server in Deutschland.</p>
+      </div>
+
+      <!-- Anmelden -->
+      <div id="auth-login" style="display:none">
+        <div class="auth-form-group">
+          <label>E-Mail-Adresse</label>
+          <input type="email" id="l-email" placeholder="max@unternehmen.de" autocomplete="email">
+        </div>
+        <div class="auth-form-group">
+          <label>Passwort</label>
+          <input type="password" id="l-password" placeholder="Dein Passwort">
+        </div>
+        <a class="auth-forgot" href="#" onclick="showForgot(); return false;">Passwort vergessen?</a>
+        <div id="forgot-notice" style="display:none" class="auth-notice">
+          Im echten System erhältst du in wenigen Sekunden einen Reset-Link per E-Mail. (Demo)
+        </div>
+        <div class="auth-btn-wrap">
+          <button class="btn btn-orange" onclick="auth('login')">Anmelden &amp; weiter →</button>
+        </div>
+        <p class="auth-terms">Noch kein Konto? <a href="#" onclick="showAuthTab('register'); return false;">Jetzt registrieren</a></p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PAGE 1 -->
+<div id="p1" class="page active">
+  <div class="steps">
+    <div class="step active"><span class="step-number">1</span> Paket wählen</div>
+    <div class="step-line"></div>
+    <div class="step"><span class="step-number">2</span> Daten eingeben</div>
+    <div class="step-line"></div>
+    <div class="step"><span class="step-number">3</span> Prüfen</div>
+    <div class="step-line"></div>
+    <div class="step"><span class="step-number">4</span> Fertig</div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-label">Schritt 1 – 4</div>
+    <h1>Abos / Erweiterung Wählen</h1>
+    <p>Finde das passende Paket für dein Unternehmen. Alle Pakete mit deutschen Servern und DSGVO-konformem Betrieb.</p>
+  </div>
+
+  <div class="toggle-wrap">
+    <div class="toggle">
+      <button class="toggle-opt active" onclick="setMode('m')">Monatlich</button>
+      <button class="toggle-opt" onclick="setMode('y')">Jährlich <span class="toggle-badge">–20 %</span></button>
+    </div>
+  </div>
+
+  <div class="cards-container">
+    <div class="cards">
+      <div class="card" data-plan="enterprise">
+        <div class="card-name">Linkado Enterprise</div>
+        <div class="card-price-row">
+          <span class="card-price-old" data-orig="109">109 €</span>
+          <span class="card-price-amount"><span class="pv">109</span> €</span>
+          <span class="card-price-period"> / Monat (netto)</span>
+        </div>
+        <div class="card-save">&nbsp;</div>
+        <div class="card-desc">Für Unternehmen mit erhöhten Anforderungen an Datenschutz &amp; Kontrolle.</div>
+        <ul class="card-features">
+          <li>Alle Business-Funktionen</li>
+          <li>Individuelle Zusatzmodule</li>
+          <li>On-Premises / dedizierte Umgebung</li>
+          <li>Erweiterte Sicherheitsoptionen</li>
+          <li>Persönlicher Ansprechpartner</li>
+        </ul>
+        <div class="card-support">SLA &amp; individuelle Vereinbarungen</div>
+        <button class="btn btn-blue" onclick="choose('enterprise')">Jetzt bestellen →</button>
+      </div>
+
+      <div class="card highlight" data-plan="business">
+        <div class="card-recommended">Empfohlen</div>
+        <div class="card-name">Linkado Business</div>
+        <div class="card-price-row">
+          <span class="card-price-old" data-orig="79">79 €</span>
+          <span class="card-price-amount"><span class="pv">79</span> €</span>
+          <span class="card-price-period"> / Monat (netto)</span>
+        </div>
+        <div class="card-save">&nbsp;</div>
+        <div class="card-desc">Für wachsende Unternehmen mit strukturierten Abläufen.</div>
+        <ul class="card-features">
+          <li>Alle Start-Funktionen</li>
+          <li>Erweiterte Module (40+)</li>
+          <li>Automatisierte Workflows</li>
+          <li>Rollen &amp; Berechtigungen</li>
+          <li>Team- &amp; Projektstrukturen</li>
+        </ul>
+        <div class="card-support">Priorisierter Support</div>
+        <button class="btn btn-blue" onclick="choose('business')">Jetzt bestellen →</button>
+      </div>
+
+      <div class="card" data-plan="start">
+        <div class="card-name">Linkado Start</div>
+        <div class="card-price-row">
+          <span class="card-price-old" data-orig="49">49 €</span>
+          <span class="card-price-amount"><span class="pv">49</span> €</span>
+          <span class="card-price-period"> / Monat (netto)</span>
+        </div>
+        <div class="card-save">&nbsp;</div>
+        <div class="card-desc">Für Einzelunternehmen und kleine Teams.</div>
+        <ul class="card-features">
+          <li>Zentrale Team-Kommunikation</li>
+          <li>Dateiverwaltung &amp; Teilen</li>
+          <li>Kalender &amp; Aufgaben</li>
+          <li>Grundlegende Module</li>
+          <li>DSGVO-konformer Betrieb</li>
+        </ul>
+        <div class="card-support">E-Mail-Support</div>
+        <button class="btn btn-blue" onclick="choose('start')">Jetzt bestellen →</button>
+      </div>
+    </div>
+
+    <div class="trust">
+      <span>DSGVO-konform</span>
+      <span>Jederzeit kündbar</span>
+      <span>SSL-verschlüsselt</span>
+      <span>Server in Deutschland</span>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2 -->
+<div id="p2" class="page">
+  <div class="steps">
+    <div class="step done"><span class="step-number">✓</span> Paket wählen</div>
+    <div class="step-line done"></div>
+    <div class="step active"><span class="step-number">2</span> Daten eingeben</div>
+    <div class="step-line"></div>
+    <div class="step"><span class="step-number">3</span> Prüfen</div>
+    <div class="step-line"></div>
+    <div class="step"><span class="step-number">4</span> Fertig</div>
+  </div>
+
+  <div class="checkout-container">
+    <div class="checkout-grid">
+
+      <!-- ── Linke Spalte: Formular ─────────────────────── -->
+      <div>
+
+        <!-- Abschnitt 1: Ihre Daten -->
+        <div class="form-section">
+          <h2 class="form-section-title">Ihre Daten</h2>
+          <p class="form-section-subtitle">Bitte geben Sie Ihre Kontaktdaten ein.</p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Anrede *</label>
+              <select id="p2-anrede">
+                <option value="">Bitte wählen</option>
+                <option value="herr">Herr</option>
+                <option value="frau">Frau</option>
+                <option value="divers">Divers</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Vorname *</label>
+              <input type="text" id="p2-firstname" placeholder="Max">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group">
+              <label>Nachname *</label>
+              <input type="text" id="p2-lastname" placeholder="Mustermann">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group">
+              <label>E-Mail-Adresse *</label>
+              <input type="email" id="email-input" placeholder="max@unternehmen.de">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group">
+              <label>Nutzungsart (Rechnungsstellung)</label>
+              <select id="p2-nutzungsart" onchange="toggleUstId()">
+                <option value="privat">Privat</option>
+                <option value="geschaeftlich">Geschäftlich</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row" id="firma-row">
+            <div class="form-group">
+              <label>Firma (optional)</label>
+              <input type="text" id="p2-firma" placeholder="Musterfirma GmbH" oninput="toggleUstId()">
+            </div>
+            <div class="form-group" id="ust-id-wrap">
+              <label>USt-ID</label>
+              <input type="text" id="p2-ustid" placeholder="DE123456789">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group">
+              <label>Empfehlungs-E-Mail (optional)</label>
+              <input type="email" id="p2-empfehler" placeholder="empfehler@beispiel.de">
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Abschnitt 2: Rechnungsadresse -->
+        <div class="form-section">
+          <h2 class="form-section-title">Rechnungsadresse</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Straße *</label>
+              <input type="text" id="p2-strasse" placeholder="Musterstraße">
+            </div>
+            <div class="form-group">
+              <label>Hausnummer *</label>
+              <input type="text" id="p2-hausnr" placeholder="1">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>PLZ *</label>
+              <input type="text" id="p2-plz" placeholder="10115">
+            </div>
+            <div class="form-group">
+              <label>Ort *</label>
+              <input type="text" id="p2-ort" placeholder="Berlin">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group">
+              <label>Land</label>
+              <select id="p2-land">
+                <option value="de">Deutschland</option>
+                <option value="at">Österreich</option>
+                <option value="ch">Schweiz</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Abschnitt 3: Zahlungsart -->
+        <div class="form-section">
+          <h2 class="form-section-title">Zahlungsart</h2>
+          <div class="pay-grid">
+            <div class="pay-opt active" id="pay-sepa" onclick="setPay(this,'sepa')">SEPA-Überweisung /<br>Dauerauftrag</div>
+            <div class="pay-opt" id="pay-rechnung" onclick="setPay(this,'rechnung')">Rechnung<br>(manuelle Zahlung)</div>
+          </div>
+          <div id="iban-wrap">
+            <div class="form-row full" style="margin-top:10px">
+              <div class="form-group">
+                <label>IBAN</label>
+                <input type="text" id="p2-iban" placeholder="DE89 3704 0044 0532 0130 00">
+              </div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--text-light);margin-top:10px;">Felder mit * sind Pflichtfelder.</p>
+        </div>
+
+      </div>
+
+      <!-- ── Rechte Spalte: Warenkorb ────────────────────── -->
+      <div>
+        <div class="warenkorb">
+          <div class="warenkorb-header">
+            <span>🛒 Warenkorb</span>
+            <span class="warenkorb-link" onclick="go(1)">&gt;&gt;</span>
+          </div>
+
+          <div class="warenkorb-product" id="wk-paket">Linkado Business</div>
+
+          <div class="warenkorb-section-title">Monatlich</div>
+          <div class="warenkorb-item">
+            <span class="warenkorb-item-name" id="wk-name">1 × Linkado Business M1</span>
+            <span id="wk-netto">79,00 €</span>
+          </div>
+
+          <div class="warenkorb-section-title" style="margin-top:12px">Einmalig</div>
+          <div class="warenkorb-item">
+            <span class="warenkorb-item-name">1 × Einmalentgelt</span>
+            <span>0,00 €</span>
+          </div>
+
+          <div class="warenkorb-separator"></div>
+
+          <div class="warenkorb-gesamtblock">
+            <div class="warenkorb-section-title" style="margin-top:0">Gesamtkosten</div>
+            <div class="warenkorb-total" style="margin-bottom:4px">
+              <span>Monatlich (netto)</span>
+              <span class="warenkorb-total-amount" id="wk-total-netto">79,00 €</span>
+            </div>
+            <div class="warenkorb-item">
+              <span>+ MwSt. (19 %)</span>
+              <span id="wk-mwst">15,01 €</span>
+            </div>
+            <div class="warenkorb-total" style="margin-top:10px;padding-top:10px;border-top:1px solid #fdd9cc">
+              <span>Gesamt / Monat</span>
+              <span class="warenkorb-total-amount" id="wk-gesamt">94,01 €</span>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;display:flex;flex-direction:column;gap:6px">
+            <div class="summary-note">Jederzeit kündbar</div>
+            <div class="summary-note">Sofortiger Zugang nach Freischaltung</div>
+            <div class="summary-note">SSL-verschlüsselte Übertragung</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer-Nav für Page 2 -->
+<div class="page-nav" id="nav-p2">
+  <button class="btn-back" onclick="go(1)">← Zurück</button>
+  <button class="btn-next" onclick="goToReview()">Weiter zur Prüfung →</button>
+</div>
+
+<!-- PAGE 3 – Stimmt alles? (Review) -->
+<div id="p3" class="page">
+  <div class="steps">
+    <div class="step done"><span class="step-number">✓</span> Paket wählen</div>
+    <div class="step-line done"></div>
+    <div class="step done"><span class="step-number">✓</span> Daten eingeben</div>
+    <div class="step-line done"></div>
+    <div class="step active"><span class="step-number">3</span> Prüfen</div>
+    <div class="step-line"></div>
+    <div class="step"><span class="step-number">4</span> Fertig</div>
+  </div>
+
+  <div class="review-container">
+    <a class="back" onclick="go(2)" style="margin-bottom:8px;">← Zurück zur Dateneingabe</a>
+    <div class="section-header" style="padding-bottom:24px">
+      <h1>Stimmt alles?</h1>
+      <p>Bitte prüfe deine Angaben, bevor du die kostenpflichtige Bestellung abschickst.</p>
+    </div>
+
+    <!-- Paket + Preis -->
+    <div class="review-box">
+      <div class="review-box-title">Ausgewähltes Paket</div>
+      <div class="review-row">
+        <span class="review-row-label">Paket</span>
+        <span class="review-row-value" id="rv-paket">Linkado Business</span>
+      </div>
+      <div class="review-row">
+        <span class="review-row-label">Abrechnungsintervall</span>
+        <span class="review-row-value" id="rv-intervall">Monatliches Abo</span>
+      </div>
+      <div class="review-row">
+        <span class="review-row-label">Nettobetrag</span>
+        <span class="review-row-value" id="rv-netto">79,00 €</span>
+      </div>
+      <div class="review-row">
+        <span class="review-row-label">MwSt. (19 %)</span>
+        <span class="review-row-value" id="rv-mwst">15,01 €</span>
+      </div>
+      <div class="review-total-row">
+        <span>Gesamtbetrag</span>
+        <span class="review-total-amount" id="rv-gesamt">94,01 €</span>
+      </div>
+    </div>
+
+    <!-- Persönliche Daten -->
+    <div class="review-box">
+      <div class="review-box-title">Persönliche Daten</div>
+      <div class="review-row">
+        <span class="review-row-label">Name</span>
+        <span class="review-row-value" id="rv-name">–</span>
+      </div>
+      <div class="review-row">
+        <span class="review-row-label">E-Mail</span>
+        <span class="review-row-value" id="rv-email">–</span>
+      </div>
+      <div class="review-row">
+        <span class="review-row-label">Nutzungsart</span>
+        <span class="review-row-value" id="rv-nutzung">–</span>
+      </div>
+      <div class="review-row" id="rv-firma-row" style="display:none">
+        <span class="review-row-label">Firma</span>
+        <span class="review-row-value" id="rv-firma">–</span>
+      </div>
+      <div class="review-row" id="rv-ust-row" style="display:none">
+        <span class="review-row-label">USt-ID</span>
+        <span class="review-row-value" id="rv-ust">–</span>
+      </div>
+      <div class="review-row" id="rv-empf-row" style="display:none">
+        <span class="review-row-label">Empfehlung von</span>
+        <span class="review-row-value" id="rv-empf">–</span>
+      </div>
+    </div>
+
+    <!-- Rechnungsadresse -->
+    <div class="review-box">
+      <div class="review-box-title">Rechnungsadresse</div>
+      <div class="review-row">
+        <span class="review-row-label">Straße</span>
+        <span class="review-row-value" id="rv-strasse">–</span>
+      </div>
+      <div class="review-row">
+        <span class="review-row-label">PLZ / Ort</span>
+        <span class="review-row-value" id="rv-plzort">–</span>
+      </div>
+      <div class="review-row">
+        <span class="review-row-label">Land</span>
+        <span class="review-row-value" id="rv-land">Deutschland</span>
+      </div>
+    </div>
+
+    <!-- Zahlungsart -->
+    <div class="review-box">
+      <div class="review-box-title">Zahlungsart</div>
+      <div class="review-row">
+        <span class="review-row-label">Methode</span>
+        <span class="review-row-value" id="rv-zahlungsart">SEPA-Überweisung / Dauerauftrag</span>
+      </div>
+      <div class="review-row" id="rv-iban-row" style="display:none">
+        <span class="review-row-label">IBAN</span>
+        <span class="review-row-value" id="rv-iban">–</span>
+      </div>
+    </div>
+
+    <!-- Checkboxen + CTA -->
+    <div class="review-box">
+      <div class="review-box-title">Bestätigung</div>
+      <div class="terms-group">
+        <div class="terms-item">
+          <input type="checkbox" id="chk-agb" onchange="gateFinalize()">
+          <label for="chk-agb">Ich akzeptiere die <a href="#">AGB</a> von Linkado.</label>
+        </div>
+        <div class="terms-item">
+          <input type="checkbox" id="chk-datenschutz" onchange="gateFinalize()">
+          <label for="chk-datenschutz">Ich habe die <a href="#">Datenschutzerklärung</a> gelesen und akzeptiere sie.</label>
+        </div>
+        <div class="terms-item">
+          <input type="checkbox" id="chk-widerruf" onchange="gateFinalize()">
+          <label for="chk-widerruf"><strong>Widerrufsrecht:</strong> Ich stimme zu, dass mit der Ausführung des Vertrags sofort begonnen wird. Mir ist bekannt, dass mein Widerrufsrecht damit erlischt.</label>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text-light);text-align:center;margin-top:16px;">Alle Angaben sind verschlüsselt und DSGVO-konform gespeichert.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Footer-Nav für Page 3 -->
+<div class="page-nav" id="nav-p3">
+  <button class="btn-back" onclick="go(2)">← Zurück</button>
+  <button class="btn-next" id="btn-kostenpflichtig" disabled onclick="submitOrder()">Kostenpflichtig bestellen</button>
+</div>
+
+<!-- PAGE 4 – Bestätigung -->
+<div id="p4" class="page">
+  <div class="steps">
+    <div class="step done"><span class="step-number">✓</span> Paket wählen</div>
+    <div class="step-line done"></div>
+    <div class="step done"><span class="step-number">✓</span> Daten eingeben</div>
+    <div class="step-line done"></div>
+    <div class="step done"><span class="step-number">✓</span> Prüfen</div>
+    <div class="step-line done"></div>
+    <div class="step active"><span class="step-number">4</span> Fertig</div>
+  </div>
+
+  <div class="confirm-container">
+    <div class="confirm-check">✓</div>
+    <h1>Bestellung eingegangen</h1>
+    <p>Wir haben dir eine Bestätigungsmail an <strong id="c-email">max@unternehmen.de</strong> gesendet.</p>
+    <div class="order-number-badge" id="c-ordernummer">WG-2026-000001</div>
+    <div><span class="status-badge">submitted</span></div>
+
+    <div class="next-steps">
+      <h3>So geht es weiter</h3>
+      <div class="ns-item">
+        <div class="ns-num">1</div>
+        <div class="ns-text"><strong>E-Mail bestätigen</strong> – Klicke auf den Aktivierungslink in deinem Postfach.</div>
+      </div>
+      <div class="ns-item">
+        <div class="ns-num">2</div>
+        <div class="ns-text"><strong>Einloggen</strong> – Melde dich mit deiner E-Mail und deinem Passwort an.</div>
+      </div>
+      <div class="ns-item">
+        <div class="ns-num">3</div>
+        <div class="ns-text"><strong>Loslegen</strong> – Dein Linkado-Zugang wird nach Zahlungseingang freigeschaltet.</div>
+      </div>
+    </div>
+
+    <a class="demo-reset" onclick="resetDemo()">← Zum Start (Demo neu starten)</a>
+  </div>
+</div>
+
+<script>
+  // ── State ────────────────────────────────────────────────────────────────────
+
+  let mode = 'm', plan = 'business';
+  let user = { firstName: '', lastName: '', email: '', isLoggedIn: false };
+  let orderSeq = 1; // Demo-Zähler für Ordernummern
+
+  const P = {
+    start:      { m: 49, y: 39, name: 'Linkado Start' },
+    business:   { m: 79, y: 63, name: 'Linkado Business' },
+    enterprise: { m: 109, y: 87, name: 'Linkado Enterprise' }
+  };
+
+  const LAND_LABELS = { de: 'Deutschland', at: 'Österreich', ch: 'Schweiz' };
+  const NUTZUNG_LABELS = { privat: 'Privat', geschaeftlich: 'Geschäftlich' };
+  const PAY_LABELS = { sepa: 'SEPA-Überweisung / Dauerauftrag', rechnung: 'Rechnung (manuelle Zahlung)' };
+
+  let currentPay = 'sepa';
+
+  // ── Auth Tab Toggle ──────────────────────────────────────────────────────────
+
+  function showAuthTab(tab) {
+    const isRegister = tab === 'register';
+    document.getElementById('auth-register').style.display = isRegister ? 'block' : 'none';
+    document.getElementById('auth-login').style.display    = isRegister ? 'none'  : 'block';
+    document.getElementById('tab-register').classList.toggle('active', isRegister);
+    document.getElementById('tab-login').classList.toggle('active', !isRegister);
+    document.getElementById('forgot-notice').style.display = 'none';
+  }
+
+  function showForgot() {
+    const notice = document.getElementById('forgot-notice');
+    notice.style.display = notice.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // ── Auth: Register / Login ───────────────────────────────────────────────────
+
+  function auth(mode_auth) {
+    if (mode_auth === 'register') {
+      user.firstName = document.getElementById('r-firstname').value.trim() || 'Max';
+      user.lastName  = document.getElementById('r-lastname').value.trim()  || 'Mustermann';
+      user.email     = document.getElementById('r-email').value.trim()     || 'max@unternehmen.de';
+    } else {
+      user.email     = document.getElementById('l-email').value.trim() || 'max@unternehmen.de';
+      // For demo: derive a plausible name from email local part
+      if (!user.firstName) {
+        const local = user.email.split('@')[0];
+        user.firstName = local.charAt(0).toUpperCase() + local.slice(1).replace(/[._-].*/, '');
+        user.lastName = 'Mustermann';
+      }
+    }
+    user.isLoggedIn = true;
+    updateHeader();
+    go(2);
+  }
+
+  function logout() {
+    user = { firstName: '', lastName: '', email: '', isLoggedIn: false };
+    updateHeader();
+    go(1);
+  }
+
+  // ── Header ───────────────────────────────────────────────────────────────────
+
+  function updateHeader() {
+    const btnAnmelden = document.getElementById('btn-anmelden');
+    const btnUser     = document.getElementById('btn-user');
+    const btnAbmelden = document.getElementById('btn-abmelden');
+    if (user.isLoggedIn) {
+      btnAnmelden.style.display = 'none';
+      btnUser.style.display     = 'inline';
+      btnUser.textContent       = 'Hallo, ' + user.firstName + ' ✦';
+      btnAbmelden.style.display = 'inline';
+    } else {
+      btnAnmelden.style.display = 'inline';
+      btnUser.style.display     = 'none';
+      btnAbmelden.style.display = 'none';
+    }
+  }
+
+  // ── Page Navigation ──────────────────────────────────────────────────────────
+
+  function go(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('p' + page).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Footer-Nav Sichtbarkeit
+    const navP2 = document.getElementById('nav-p2');
+    const navP3 = document.getElementById('nav-p3');
+    if (navP2) navP2.classList.toggle('visible', page === 2);
+    if (navP3) navP3.classList.toggle('visible', page === 3);
+
+    if (page === 0) {
+      const planName = plan ? ' / ' + P[plan].name : '';
+      document.getElementById('breadcrumb').textContent = 'Angebote' + planName + ' / Anmelden';
+      const tagline = document.getElementById('auth-tagline');
+      if (tagline && plan) {
+        tagline.textContent = 'Du hast ' + P[plan].name + ' gewählt – melde dich an oder erstelle ein Konto, um fortzufahren.';
+      }
+    } else if (page === 1) {
+      document.getElementById('breadcrumb').textContent = 'Schreibtisch / Angebote';
+    } else if (page === 2) {
+      document.getElementById('breadcrumb').textContent = 'Angebote / ' + P[plan].name;
+      prefillPage2();
+      updateWarenkorb();
+    } else if (page === 3) {
+      document.getElementById('breadcrumb').textContent = 'Angebote / ' + P[plan].name + ' / Prüfen';
+    } else if (page === 4) {
+      document.getElementById('breadcrumb').textContent = 'Angebote / ' + P[plan].name + ' / Bestätigung';
+    }
+  }
+
+  // ── Weiter zur Prüfung (Page 2 → Page 3) ──────────────────────────────────
+
+  function goToReview() {
+    fillReview();
+    go(3);
+  }
+
+  // ── Pre-fill Page 2 from registration ───────────────────────────────────────
+
+  function prefillPage2() {
+    if (!user.isLoggedIn) return;
+    const fnEl = document.getElementById('p2-firstname');
+    const lnEl = document.getElementById('p2-lastname');
+    const emEl = document.getElementById('email-input');
+    if (fnEl && !fnEl.value) fnEl.value = user.firstName;
+    if (lnEl && !lnEl.value) lnEl.value = user.lastName;
+    if (emEl) {
+      emEl.value    = user.email;
+      emEl.readOnly = true;
+    }
+    // Warenkorb synchronisieren
+    updateWarenkorb();
+  }
+
+  // ── Price Helpers ─────────────────────────────────────────────────────────────
+
+  function setMode(m) {
+    mode = m;
+    document.querySelectorAll('.toggle-opt').forEach((b, i) => {
+      b.classList.toggle('active', (m === 'm' && i === 0) || (m === 'y' && i === 1));
+    });
+    document.querySelectorAll('.card').forEach(c => {
+      const k = c.dataset.plan, price = P[k][mode];
+      c.querySelector('.pv').textContent = price;
+      const old = c.querySelector('.card-price-old'), save = c.querySelector('.card-save');
+      if (mode === 'y') {
+        old.classList.add('show');
+        save.textContent = 'Spare ' + (P[k].m * 12 - P[k].y * 12) + ' € / Jahr';
+      } else {
+        old.classList.remove('show');
+        save.innerHTML = '&nbsp;';
+      }
+    });
+    updateSummary();
+    updateWarenkorb();
+  }
+
+  function choose(p) {
+    plan = p;
+    updateSummary();
+    updateWarenkorb();
+    go(2); // Direkt zur Dateneingabe – kein Login-Zwischenschritt im Prototyp
+  }
+
+  function updateSummary() {
+    const price = P[plan][mode], vat = Math.round(price * 19) / 100, total = price + vat;
+    const sName = document.getElementById('s-name');
+    const sInt  = document.getElementById('s-interval');
+    const sNet  = document.getElementById('s-net');
+    const sVat  = document.getElementById('s-vat');
+    const sTot  = document.getElementById('s-total');
+    if (sName) sName.textContent = P[plan].name;
+    if (sInt)  sInt.textContent  = mode === 'm' ? 'Monatliches Abo' : 'Jahresabo';
+    if (sNet)  sNet.textContent  = fmt(price);
+    if (sVat)  sVat.textContent  = fmt(vat);
+    if (sTot)  sTot.textContent  = fmt(total);
+  }
+
+  // ── Warenkorb (rechte Spalte Page 2) aktualisieren ─────────────────────
+
+  function updateWarenkorb() {
+    const price = P[plan][mode];
+    const vat   = Math.round(price * 19) / 100;
+    const total = price + vat;
+    const suffix = mode === 'y' ? ' (Jahresabo)' : ' M1';
+    setText('wk-paket',       P[plan].name);
+    setText('wk-name',        '1 × ' + P[plan].name + suffix);
+    setText('wk-netto',       fmt(price));
+    setText('wk-total-netto', fmt(price));
+    setText('wk-mwst',        fmt(vat));
+    setText('wk-gesamt',      fmt(total));
+  }
+
+  function fmt(n) { return n.toFixed(2).replace('.', ',') + ' €'; }
+
+  // ── USt-ID: ein-/ausblenden wenn Firma gefüllt ────────────────────────────
+
+  function toggleUstId() {
+    const firma = (document.getElementById('p2-firma') || {}).value || '';
+    const wrap  = document.getElementById('ust-id-wrap');
+    if (wrap) wrap.style.display = firma.trim() ? 'flex' : 'none';
+  }
+
+  // ── Payment Method ────────────────────────────────────────────────────────────
+
+  function setPay(el, type) {
+    document.querySelectorAll('.pay-opt').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    currentPay = type;
+    document.getElementById('iban-wrap').style.display = type === 'sepa' ? 'block' : 'none';
+  }
+
+  // ── Review: Daten aus Page 2 in Page 3 übertragen ─────────────────────────
+
+  function fillReview() {
+    const anrede = (document.getElementById('p2-anrede')    || {}).value || '';
+    const fn   = (document.getElementById('p2-firstname') || {}).value || '';
+    const ln   = (document.getElementById('p2-lastname')  || {}).value || '';
+    const em   = (document.getElementById('email-input')  || {}).value || user.email || '';
+    const nart = (document.getElementById('p2-nutzungsart') || {}).value || 'privat';
+    const firm = (document.getElementById('p2-firma')     || {}).value || '';
+    const ust  = (document.getElementById('p2-ustid')     || {}).value || '';
+    const str  = (document.getElementById('p2-strasse')   || {}).value || '';
+    const hnr  = (document.getElementById('p2-hausnr')    || {}).value || '';
+    const plz  = (document.getElementById('p2-plz')       || {}).value || '';
+    const ort  = (document.getElementById('p2-ort')       || {}).value || '';
+    const land = (document.getElementById('p2-land')      || {}).value || 'de';
+    const empf = (document.getElementById('p2-empfehler') || {}).value || '';
+    const iban = (document.getElementById('p2-iban')      || {}).value || '';
+
+    // Anrede-Label aufbauen
+    const anredeMap = { herr: 'Herr', frau: 'Frau', divers: 'Divers' };
+    const anredeLabel = anrede ? (anredeMap[anrede] || '') + ' ' : '';
+
+    const price = P[plan][mode], vat = Math.round(price * 19) / 100, total = price + vat;
+
+    setText('rv-paket',    P[plan].name);
+    setText('rv-intervall', mode === 'm' ? 'Monatliches Abo' : 'Jahresabo');
+    setText('rv-netto',    fmt(price));
+    setText('rv-mwst',     fmt(vat));
+    setText('rv-gesamt',   fmt(total));
+
+    setText('rv-name',  (anredeLabel + fn + ' ' + ln).trim() || '–');
+    setText('rv-email', em || '–');
+    setText('rv-nutzung', NUTZUNG_LABELS[nart] || nart);
+
+    showRow('rv-firma-row', firm);  setText('rv-firma', firm || '–');
+    showRow('rv-ust-row',   ust);   setText('rv-ust',   ust  || '–');
+    showRow('rv-empf-row',  empf);  setText('rv-empf',  empf || '–');
+
+    setText('rv-strasse', (str + (hnr ? ' ' + hnr : '')).trim() || '–');
+    setText('rv-plzort',  (plz + ' ' + ort).trim() || '–');
+    setText('rv-land',    LAND_LABELS[land] || land);
+
+    setText('rv-zahlungsart', PAY_LABELS[currentPay] || currentPay);
+    showRow('rv-iban-row', currentPay === 'sepa');
+    setText('rv-iban', iban ? maskIban(iban) : '–');
+
+    // Checkboxen zurücksetzen und Button sperren
+    ['chk-agb','chk-datenschutz','chk-widerruf'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.checked = false;
+    });
+    gateFinalize();
+  }
+
+  function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function showRow(id, show) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = show ? 'flex' : 'none';
+  }
+
+  function maskIban(iban) {
+    const clean = iban.replace(/\s/g, '');
+    return clean.length > 6 ? clean.slice(0, 4) + ' •••• •••• ' + clean.slice(-4) : iban;
+  }
+
+  // ── Finalize-Button: erst aktiv wenn alle 3 Checkboxen gecheckt ─────────
+
+  function gateFinalize() {
+    const allChecked = ['chk-agb','chk-datenschutz','chk-widerruf'].every(id => {
+      const el = document.getElementById(id);
+      return el && el.checked;
+    });
+    const btn = document.getElementById('btn-kostenpflichtig');
+    if (btn) btn.disabled = !allChecked;
+  }
+
+  // ── Bestellung absenden (Demo) ────────────────────────────────────────────
+
+  function submitOrder() {
+    const btn = document.getElementById('btn-kostenpflichtig');
+    if (btn) { btn.disabled = true; btn.textContent = 'Bestellung wird übermittelt…'; }
+
+    setTimeout(function() {
+      const year     = new Date().getFullYear();
+      const seq      = String(orderSeq++).padStart(6, '0');
+      const orderNum = 'WG-' + year + '-' + seq;
+
+      const email = (document.getElementById('email-input') || {}).value || user.email || 'max@unternehmen.de';
+      setText('c-email', email);
+      setText('c-ordernummer', orderNum);
+
+      go(4);
+    }, 1200);
+  }
+
+  // ── Demo Reset ────────────────────────────────────────────────────────────────
+
+  function resetDemo() {
+    user = { firstName: '', lastName: '', email: '', isLoggedIn: false };
+    mode = 'm';
+    plan = 'business';
+    currentPay = 'sepa';
+    updateHeader();
+
+    // Authentifizierungs-Felder leeren
+    ['r-firstname','r-lastname','r-email','r-password','l-email','l-password'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+
+    // Page-2-Felder leeren
+    ['p2-firstname','p2-lastname','p2-firma','p2-ustid','p2-strasse','p2-hausnr','p2-plz','p2-ort','p2-iban','p2-empfehler'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.value = ''; el.readOnly = false; }
+    });
+    const anredeEl = document.getElementById('p2-anrede');
+    if (anredeEl) anredeEl.value = '';
+    const emEl = document.getElementById('email-input');
+    if (emEl) { emEl.value = ''; emEl.readOnly = false; }
+
+    // Selects zurücksetzen
+    const nutzEl = document.getElementById('p2-nutzungsart');
+    if (nutzEl) nutzEl.value = 'privat';
+    const landEl = document.getElementById('p2-land');
+    if (landEl) landEl.value = 'de';
+
+    // USt-ID-Feld verstecken, Zahlungsart zurücksetzen
+    const ustWrap = document.getElementById('ust-id-wrap');
+    if (ustWrap) ustWrap.style.display = 'none';
+    const ibanWrap = document.getElementById('iban-wrap');
+    if (ibanWrap) ibanWrap.style.display = 'block';
+    document.querySelectorAll('.pay-opt').forEach((el, i) => {
+      el.classList.toggle('active', i === 0);
+    });
+
+    // Passwort-vergessen-Hinweis zurücksetzen
+    document.getElementById('forgot-notice').style.display = 'none';
+    showAuthTab('register');
+    updateWarenkorb();
+    go(1);
+  }
+
+  // ── Initialisierung beim Seitenaufruf ─────────────────────────────────────
+  updateSummary();
+  updateWarenkorb();
+</script>
+</body>
+</html>
